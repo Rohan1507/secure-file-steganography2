@@ -16,7 +16,7 @@ in PROJECT_REPORT.md.
 """
 import numpy as np
 from PIL import Image
-from scipy import stats
+
 
 
 def _load_rgb_array(path: str) -> np.ndarray:
