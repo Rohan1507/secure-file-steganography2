@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}History - SecureStego{% endblock %}
+{% block content %}
+
+<div class="section-title"><span class="tag">HISTORY</span></div>
+<h2>Your File Operations</h2>
+<p class="text-dim">Complete record of every embed and extraction you've performed.</p>
+
+<div class="card mt-2">
+  {% if operations %}
+  <table>
+    <thead>
+      <tr><th>Type</th><th>File</th><th>Size</th><th>Status</th><th>Verification</th><th>Date</th><th>Action</th></tr>
+    </thead>
+    <tbody>
+      {% for op in operations %}
+      <tr>
+        <td class="mono">{{ op.operation_type|upper }}</td>
+        <td>{{ op.original_filename or '—' }}</td>
+        <td class="mono">{{ op.file_size or '—' }}</td>
+        <td>
+          {% if op.status == 'success' %}<span class="badge badge-success">SUCCESS</span>
+          {% else %}<span class="badge badge-danger">FAILED</span>{% endif %}
+        </td>
+        <td>
+          {% if op.verification == 'PASS' %}<span class="badge badge-success">PASS</span>
+          {% elif op.verification == 'FAIL' %}<span class="badge badge-danger">FAIL</span>
+          {% else %}<span class="text-dim">—</span>{% endif %}
+        </td>
+        <td class="text-dim">{{ op.timestamp.strftime('%d %b %Y, %H:%M') }}</td>
+        <td>
+          {% if op.status == 'success' and op.operation_type == 'embed' and op.stego_file_id %}
+            <a href="{{ url_for('stego.download_stego', stego_id=op.stego_file_id) }}" class="text-dim">Download</a>
+            &middot; <a href="{{ url_for('analysis.analysis', stego_id=op.stego_file_id) }}" class="text-dim">Analyze</a>
+          {% elif op.status == 'success' and op.operation_type == 'extract' %}
+            <a href="{{ url_for('stego.download_extracted', operation_id=op.id) }}" class="text-dim">Download</a>
+          {% else %}
+            <span class="text-dim">—</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="text-dim">No operations yet. <a href="{{ url_for('stego.embed') }}">Embed your first file</a>.</p>
+  {% endif %}
+</div>
+
+{% endblock %}

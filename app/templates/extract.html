@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Extract Secret File - SecureStego{% endblock %}
+{% block content %}
+
+<div class="section-title"><span class="tag">EXTRACT</span></div>
+<h2>Recover a secret file from a stego image</h2>
+<p class="text-dim">Pipeline: LSB extraction &rarr; payload parsing &rarr; AES-256-GCM decryption &rarr; SHA-256 verification.</p>
+
+{% if result %}
+<div class="card mt-2">
+  <h3>{{ '✅ File extracted and verified successfully' if verification == 'PASS' else '⚠️ File extracted — verification failed' }}</h3>
+  <div class="grid grid-2 mt-1">
+    <div><div class="stat-label">Recovered filename</div><div class="mono">{{ filename }}</div></div>
+    <div><div class="stat-label">File size</div><div class="mono">{{ file_size }} bytes</div></div>
+  </div>
+  <hr class="divider">
+  <table>
+    <tbody>
+      <tr><th>Original SHA-256</th><td class="mono" style="word-break:break-all;">{{ sha256_original }}</td></tr>
+      <tr><th>Extracted SHA-256</th><td class="mono" style="word-break:break-all;">{{ sha256_result }}</td></tr>
+      <tr><th>Verification</th><td>
+        {% if verification == 'PASS' %}<span class="badge badge-success">PASS</span>
+        {% else %}<span class="badge badge-danger">FAIL</span>{% endif %}
+      </td></tr>
+    </tbody>
+  </table>
+  <div class="flex gap-1 mt-1" style="flex-wrap:wrap;">
+    <a href="{{ url_for('stego.download_extracted', operation_id=operation_id) }}" class="btn btn-primary">Download Recovered File</a>
+    <a href="{{ url_for('stego.extract') }}" class="btn btn-outline">Extract Another File</a>
+  </div>
+</div>
+{% endif %}
+
+<div class="card mt-2">
+  <form id="extractForm" method="POST" action="{{ url_for('stego.extract') }}" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="form-group">
+      <label>Stego Image (PNG or BMP)</label>
+      <div class="file-drop">
+        <input type="file" id="stegoImageInput" name="stego_image" accept=".png,.bmp" hidden required>
+        <div>&#128247; Click or drag the stego image here</div>
+        <div class="file-drop-filename"></div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="password">Decryption password</label>
+      <input type="password" id="password" name="password" required>
+    </div>
+
+    <button type="submit" id="extractSubmitBtn" class="btn btn-primary btn-block mt-1">Extract Secret File</button>
+    <div id="extractProgress" class="progress-indicator"><div class="spinner"></div> Extracting and decrypting...</div>
+  </form>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/extract.js') }}"></script>
+{% endblock %}

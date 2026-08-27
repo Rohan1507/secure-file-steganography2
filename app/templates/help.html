@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Help & About - SecureStego{% endblock %}
+{% block content %}
+
+<div class="section-title"><span class="tag">ABOUT</span></div>
+<h2>How Secure File Sharing with Steganography works</h2>
+
+<div class="card mt-2">
+  <h3>What is steganography?</h3>
+  <p>Steganography is the practice of concealing a message, file, or data
+    inside another, non-secret file so that its existence itself is hidden.
+    Unlike encryption, which scrambles data into unreadable ciphertext (but
+    still reveals that a secret exists), steganography hides data in plain
+    sight — for example, inside the pixels of a photograph.</p>
+
+  <h3>What is LSB (Least Significant Bit) steganography?</h3>
+  <p>Every pixel in a digital image is made of color channels (Red, Green,
+    Blue), each stored as a byte (0–255). The "least significant bit" is the
+    smallest, right-most bit of that byte — changing it shifts the color
+    value by at most 1 out of 255, an amount invisible to the human eye.
+    By replacing the LSB of many pixel channels with the bits of a secret
+    message, we can hide a substantial amount of data inside an image
+    without visibly altering it.</p>
+
+  <h3>How does this application secure your files?</h3>
+  <ol>
+    <li>Your secret file is read as raw binary data.</li>
+    <li>It is encrypted with <strong>AES-256-GCM</strong>, using a key derived
+      from your password via PBKDF2-HMAC-SHA256. GCM mode provides both
+      confidentiality and built-in integrity/authentication (a forged or
+      corrupted ciphertext will fail to decrypt).</li>
+    <li>The encrypted data, plus metadata needed to reconstruct it (filename,
+      extension, salt, nonce, SHA-256 hash), is packed into a structured
+      binary payload.</li>
+    <li>That payload is embedded into a cover image's pixels using LSB
+      substitution, producing a "stego image" that looks identical to the
+      original at a glance.</li>
+    <li>The receiver uploads the stego image, the app extracts the payload
+      bits, and — with the correct password — decrypts and verifies the file
+      against its original SHA-256 hash before allowing download.</li>
+  </ol>
+</div>
+
+<div class="card mt-2">
+  <h3>Security Disclaimer</h3>
+  <ul>
+    <li>Steganography hides the <em>existence</em> of information; it does
+      not replace encryption. This app always encrypts first.</li>
+    <li>LSB steganography can be vulnerable to statistical steganalysis
+      (see the Security Analysis page) and is destroyed by lossy
+      transformations like re-saving as JPEG, resizing, or heavy compression.</li>
+    <li>PNG and BMP are the only supported cover formats in this project,
+      because they are lossless — JPEG compression would corrupt the hidden
+      bits.</li>
+    <li>This project is intended for educational and authorized file-sharing
+      demonstrations. It makes no claim of being 100% undetectable,
+      unbreakable, or "military-grade" — no steganographic or cryptographic
+      system can honestly claim that.</li>
+  </ul>
+</div>
+
+<div class="card mt-2">
+  <h3>Supported file types</h3>
+  <p><strong>Cover / stego images:</strong> PNG, BMP.</p>
+  <p><strong>Secret files:</strong> any binary or text file — TXT, PDF, DOCX,
+    XLSX, ZIP, images, MP3, MP4, and more. The file is treated as raw binary
+    data, so byte-for-byte integrity is preserved and verified via SHA-256.</p>
+  <p><strong>Audio (optional module):</strong> WAV (16-bit PCM) is supported
+    as a secondary carrier format using the same LSB approach on audio
+    samples. Compressed audio (MP3) is not supported, since lossy compression
+    destroys LSB data the same way JPEG does for images.</p>
+</div>
+
+{% endblock %}

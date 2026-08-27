@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Embed Secret File - SecureStego{% endblock %}
+{% block content %}
+
+<div class="section-title"><span class="tag">EMBED</span></div>
+<h2>Hide a secret file inside a cover image</h2>
+<p class="text-dim">Pipeline: encrypt with AES-256-GCM &rarr; build secure payload &rarr; embed via LSB &rarr; download stego image.</p>
+
+{% if result %}
+<div class="card mt-2">
+  <h3>&#9989; Secret file embedded successfully</h3>
+  <div class="grid grid-3 mt-1">
+    <div><div class="stat-label">Cover dimensions</div><div class="mono">{{ embed_info.width }} x {{ embed_info.height }}</div></div>
+    <div><div class="stat-label">Payload size</div><div class="mono">{{ payload_size }} bytes</div></div>
+    <div><div class="stat-label">Capacity used</div><div class="mono">{{ ((embed_info.bytes_used / capacity.usable_capacity_bytes) * 100) | round(2) }}%</div></div>
+  </div>
+  <hr class="divider">
+  <div class="flex gap-1" style="flex-wrap:wrap;">
+    <a href="{{ url_for('stego.download_stego', stego_id=stego_id) }}" class="btn btn-primary">Download Stego Image</a>
+    <a href="{{ url_for('analysis.analysis', stego_id=stego_id) }}" class="btn btn-outline">View Security Analysis</a>
+    <a href="{{ url_for('stego.embed') }}" class="btn btn-outline">Embed Another File</a>
+  </div>
+  <p class="text-dim mt-1" style="font-size:.85rem;">Remember the password you used — it is required to extract this file later. It is never stored anywhere.</p>
+</div>
+{% endif %}
+
+<div class="card mt-2">
+  <form id="embedForm" method="POST" action="{{ url_for('stego.embed') }}" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <div class="form-group">
+      <label>Cover Image (PNG or BMP)</label>
+      <div class="file-drop">
+        <input type="file" id="coverImageInput" name="cover_image" accept=".png,.bmp" hidden required>
+        <div>&#128247; Click or drag a PNG/BMP cover image here</div>
+        <div class="file-drop-filename"></div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Secret File (any file type)</label>
+      <div class="file-drop">
+        <input type="file" id="secretFileInput" name="secret_file" hidden required>
+        <div>&#128196; Click or drag the file you want to hide</div>
+        <div class="file-drop-filename"></div>
+      </div>
+    </div>
+
+    <div id="capacityBox" class="card" style="display:none; background:var(--bg-alt); padding:1rem;">
+      <div class="grid grid-3" style="font-size:.85rem;">
+        <div><span class="text-dim">Image dimensions:</span> <span id="imgDims" class="mono"></span></div>
+        <div><span class="text-dim">Cover capacity:</span> <span id="imgCapacity" class="mono"></span></div>
+        <div><span class="text-dim">Secret size:</span> <span id="secretSizeText" class="mono"></span></div>
+      </div>
+      <div class="meter mt-1"><div id="capacityMeterFill" class="meter-fill" style="width:0%;"></div></div>
+      <div id="capacityMeterRow" class="meter-row"><span id="remainingText"></span></div>
+    </div>
+
+    <div class="grid grid-2 mt-1">
+      <div class="form-group">
+        <label for="password">Encryption password</label>
+        <input type="password" id="password" name="password" required minlength="8">
+      </div>
+      <div class="form-group">
+        <label for="confirm_password">Confirm password</label>
+        <input type="password" id="confirm_password" name="confirm_password" required minlength="8">
+      </div>
+    </div>
+    <p class="form-hint">This password derives the AES-256 key (via PBKDF2-HMAC-SHA256). It is never stored — write it down.</p>
+
+    <button type="submit" id="embedSubmitBtn" class="btn btn-primary btn-block mt-1">Embed Secret File</button>
+    <div id="embedProgress" class="progress-indicator"><div class="spinner"></div> Encrypting and embedding... this may take a few seconds.</div>
+  </form>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/embed.js') }}"></script>
+{% endblock %}

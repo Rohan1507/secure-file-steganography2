@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Security Analysis - SecureStego{% endblock %}
+{% block content %}
+
+<div class="section-title"><span class="tag">ANALYSIS</span></div>
+<h2>Security &amp; Quality Analysis</h2>
+<p class="text-dim">Stego file #{{ record.id }} &middot; embedded {{ record.created_at.strftime('%d %b %Y, %H:%M') }}</p>
+
+{% if unavailable %}
+<div class="card mt-2">
+  <p>{{ message }}</p>
+</div>
+{% else %}
+
+<div class="grid grid-4 mt-2">
+  <div class="stat-card">
+    <div class="stat-label">MSE</div>
+    <div class="stat-value accent">{{ results.mse }}</div>
+    <p class="mb-0 mt-1" style="font-size:.78rem;">Mean Squared Error between cover and stego pixels.</p>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">PSNR</div>
+    <div class="stat-value accent">{{ results.psnr if results.psnr is not none else '∞' }}{% if results.psnr is not none %} dB{% endif %}</div>
+    <p class="mb-0 mt-1" style="font-size:.78rem;">Higher generally means less visible distortion.</p>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">SSIM</div>
+    <div class="stat-value accent">{{ results.ssim }}</div>
+    <p class="mb-0 mt-1" style="font-size:.78rem;">Structural similarity, 1.0 = visually identical.</p>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Chi-Square</div>
+    <div class="stat-value accent">{{ results.chi_square }}</div>
+    <p class="mb-0 mt-1" style="font-size:.78rem;">Educational LSB steganalysis statistic.</p>
+  </div>
+</div>
+
+<div class="card mt-2">
+  <h3>Payload vs Capacity</h3>
+  <div class="grid grid-3">
+    <div><span class="text-dim">Payload size:</span> <span class="mono">{{ results.payload_bytes }} bytes</span></div>
+    <div><span class="text-dim">Usable capacity:</span> <span class="mono">{{ results.capacity_bytes }} bytes</span></div>
+    <div><span class="text-dim">Payload-to-capacity ratio:</span> <span class="mono">{{ (results.payload_ratio * 100) | round(2) }}%</span></div>
+  </div>
+  <div class="meter mt-1"><div class="meter-fill" style="width:{{ (results.payload_ratio*100)|round(2) }}%;"></div></div>
+</div>
+
+<div class="card mt-2">
+  <h3>Visual Comparison</h3>
+  <div class="grid grid-3">
+    <div>
+      <div class="stat-label mb-0">Original Cover</div>
+      <div class="img-frame mt-1"><img src="{{ url_for('analysis.serve_cover_image', stego_id=record.id) }}" alt="Cover image"></div>
+      <p class="text-dim mt-1" style="font-size:.8rem;">{{ (cover_size / 1024) | round(1) }} KB</p>
+    </div>
+    <div>
+      <div class="stat-label mb-0">Stego Image</div>
+      <div class="img-frame mt-1"><img src="{{ url_for('analysis.serve_stego_image', stego_id=record.id) }}" alt="Stego image"></div>
+      <p class="text-dim mt-1" style="font-size:.8rem;">{{ (stego_size / 1024) | round(1) }} KB</p>
+    </div>
+    <div>
+      <div class="stat-label mb-0">Difference (20x amplified)</div>
+      <div class="img-frame mt-1"><img src="{{ url_for('analysis.serve_diff_image', stego_id=record.id) }}" alt="Difference image"></div>
+      <p class="text-dim mt-1" style="font-size:.8rem;">Brighter pixels = larger LSB modifications.</p>
+    </div>
+  </div>
+</div>
+
+<div class="card mt-2">
+  <h3>Interpretation</h3>
+  <p>Lower statistical deviation generally indicates better concealment, but no
+    steganographic method is guaranteed to evade steganalysis. A high PSNR and
+    SSIM close to 1.0 indicate the stego image is visually near-identical to
+    the cover — but a determined analyst using statistical tools (like the
+    chi-square test above) may still be able to detect that <em>something</em>
+    is hidden, even without being able to read it (that protection comes from
+    the AES-256-GCM encryption layer, not the steganography itself).</p>
+</div>
+
+{% endif %}
+{% endblock %}

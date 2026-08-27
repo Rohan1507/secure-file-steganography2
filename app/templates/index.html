@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Secure File Sharing with Steganography{% endblock %}
+{% block content %}
+
+<div class="bitstream"><span>01001000 01001001 01000100 01000101 00100000 01000100 01000001 01010100 01000001 00100000 01001001 01001110 00100000 01010000 01001100 01000001 01001001 01001110 00100000 01010011 01001001 01000111 01001000 01010100 00100000 &nbsp; 01001000 01001001 01000100 01000101 00100000 01000100 01000001 01010100 01000001 00100000 01001001 01001110 00100000 01010000 01001100 01000001 01001001 01001110 00100000 01010011 01001001 01000111 01001000 01010100 00100000 &nbsp; </span></div>
+
+<section class="hero">
+  <h1>Hide encrypted files inside ordinary images.</h1>
+  <p class="lead">SecureStego encrypts your file with AES-256-GCM, then hides the
+    ciphertext inside the least significant bits of a cover image — so the data
+    travels invisibly, and only someone with the password can ever recover it.</p>
+  <div class="hero-actions">
+    {% if current_user.is_authenticated %}
+      <a href="{{ url_for('stego.embed') }}" class="btn btn-primary">Embed a File</a>
+      <a href="{{ url_for('dashboard.dashboard') }}" class="btn btn-outline">Go to Dashboard</a>
+    {% else %}
+      <a href="{{ url_for('auth.register') }}" class="btn btn-primary">Create Account</a>
+      <a href="{{ url_for('auth.login') }}" class="btn btn-outline">Login</a>
+    {% endif %}
+  </div>
+</section>
+
+<div class="pipeline">
+  <div class="step">Secret File</div><div class="arrow">&rarr;</div>
+  <div class="step">AES-256-GCM Encryption</div><div class="arrow">&rarr;</div>
+  <div class="step">LSB Embedding</div><div class="arrow">&rarr;</div>
+  <div class="step">Stego Image</div><div class="arrow">&rarr;</div>
+  <div class="step">Secure Transfer</div><div class="arrow">&rarr;</div>
+  <div class="step">LSB Extraction</div><div class="arrow">&rarr;</div>
+  <div class="step">Integrity Check</div><div class="arrow">&rarr;</div>
+  <div class="step">Decryption</div><div class="arrow">&rarr;</div>
+  <div class="step">Original File</div>
+</div>
+
+<div class="feature-grid">
+  <div class="feature-card">
+    <div class="icon">&#128274;</div>
+    <h3>What is steganography?</h3>
+    <p>Steganography hides the <em>existence</em> of a message, unlike encryption,
+      which scrambles a message but still reveals that one exists. A stego image
+      looks like an ordinary photo — nothing hints that data is hidden inside.</p>
+  </div>
+  <div class="feature-card">
+    <div class="icon">&#128295;</div>
+    <h3>What is LSB embedding?</h3>
+    <p>Every pixel channel (red, green, blue) is a byte from 0-255. Changing just
+      its last bit shifts the value by at most 1 — invisible to the human eye,
+      but enough space across millions of pixels to store real data.</p>
+  </div>
+  <div class="feature-card">
+    <div class="icon">&#128737;</div>
+    <h3>How this app secures your files</h3>
+    <p>Your file is encrypted with AES-256-GCM (confidentiality + integrity)
+      <strong>before</strong> it ever touches the image. Even if someone
+      suspects a stego image, they still need your password to read anything.</p>
+  </div>
+</div>
+
+<section class="card mt-2">
+  <div class="section-title"><h3 class="mb-0">Why encryption + steganography together?</h3></div>
+  <p>Encryption alone announces "something secret is here" — an encrypted blob
+    is obviously not a normal file. Steganography alone can be brute-forced or
+    statistically detected once someone knows to look. Combining both means an
+    observer first has to notice the hidden channel, and then still has to break
+    AES-256-GCM to read anything — two independent barriers instead of one.</p>
+</section>
+
+{% endblock %}
