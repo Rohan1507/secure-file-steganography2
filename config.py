@@ -17,8 +17,12 @@ class Config:
         print("WARNING: Using default SECRET_KEY. Set SECRET_KEY in your .env file for production.")
 
     # --- Database ---
-    SQLALCHEMY_DATABASE_URI = os.environ.get(
+      _raw_db_url = os.environ.get(
         "DATABASE_URL", f"sqlite:///{os.path.join(basedir, 'stego_app.db')}"
+    )
+    if _raw_db_url.startswith("postgres://"):
+        _raw_db_url = _raw_db_url.replace("postgres://", "postgresql://", 1)
+    SQLALCHEMY_DATABASE_URI = _raw_db_url
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
