@@ -97,8 +97,10 @@ def compute_chi_square(stego_path: str) -> float:
     if len(observed) < 2:
         return 0.0
 
-    chi2, _p = stats.chisquare(f_obs=observed, f_exp=expected)
-    return float(chi2)
+     observed_arr = np.array(observed, dtype=np.float64)
+    expected_arr = np.array(expected, dtype=np.float64)
+    chi2 = float(np.sum((observed_arr - expected_arr) ** 2 / expected_arr))
+    return chi2
 
 
 def generate_difference_image(cover_path: str, stego_path: str, output_path: str,
