@@ -13,10 +13,14 @@ This project implements a simplified single-window global SSIM to avoid an
 extra heavyweight dependency, which is accurate enough for demonstrating the
 concept in an academic setting. This simplification is documented here and
 in PROJECT_REPORT.md.
+
+NOTE ON CHI-SQUARE: computed directly with NumPy (sum of (observed-expected)^2
+/ expected) instead of scipy.stats.chisquare, so the project has one fewer
+heavyweight compiled dependency to install on deployment platforms. The
+formula is identical to what scipy computes for a goodness-of-fit test.
 """
 import numpy as np
 from PIL import Image
-
 
 
 def _load_rgb_array(path: str) -> np.ndarray:
@@ -86,9 +90,6 @@ def compute_chi_square(stego_path: str) -> float:
         avg = (h2k + h2k1) / 2.0
         if avg == 0:
             continue
-        # Both members of the pair are compared against their shared average,
-        # which keeps sum(observed) == sum(expected) exactly, as required by
-        # the chi-square goodness-of-fit test.
         observed.append(h2k)
         expected.append(avg)
         observed.append(h2k1)
@@ -97,7 +98,7 @@ def compute_chi_square(stego_path: str) -> float:
     if len(observed) < 2:
         return 0.0
 
-     observed_arr = np.array(observed, dtype=np.float64)
+    observed_arr = np.array(observed, dtype=np.float64)
     expected_arr = np.array(expected, dtype=np.float64)
     chi2 = float(np.sum((observed_arr - expected_arr) ** 2 / expected_arr))
     return chi2
