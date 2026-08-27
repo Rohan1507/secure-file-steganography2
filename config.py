@@ -13,17 +13,15 @@ class Config:
     # --- Core Flask ---
     SECRET_KEY = os.environ.get("SECRET_KEY", "dev-key-change-me-in-.env")
     if SECRET_KEY == "dev-key-change-me-in-.env":
-        # Loud warning so students remember to set a real key for real deployments
         print("WARNING: Using default SECRET_KEY. Set SECRET_KEY in your .env file for production.")
 
     # --- Database ---
-      _raw_db_url = os.environ.get(
+    _raw_db_url = os.environ.get(
         "DATABASE_URL", f"sqlite:///{os.path.join(basedir, 'stego_app.db')}"
     )
     if _raw_db_url.startswith("postgres://"):
         _raw_db_url = _raw_db_url.replace("postgres://", "postgresql://", 1)
     SQLALCHEMY_DATABASE_URI = _raw_db_url
-    )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # --- Sessions / cookies ---
@@ -39,7 +37,6 @@ class Config:
 
     ALLOWED_COVER_EXTENSIONS = {"png", "bmp"}
     ALLOWED_AUDIO_EXTENSIONS = {"wav"}
-    # Secret files can reasonably be almost anything - treated as raw binary.
     ALLOWED_SECRET_EXTENSIONS = {
         "txt", "pdf", "docx", "xlsx", "zip", "png", "jpg", "jpeg",
         "mp3", "mp4", "csv", "json", "gif", "bmp", "doc", "pptx", "rar", "7z"
